@@ -27,6 +27,7 @@ import tech.pegasys.teku.spec.SpecMilestone;
 import tech.pegasys.teku.spec.networks.Eth2Network;
 import tech.pegasys.web3signer.commandline.PicoCliAwsSecretsManagerParameters;
 import tech.pegasys.web3signer.commandline.PicoCliAzureKeyVaultParameters;
+import tech.pegasys.web3signer.commandline.PicoCliFortanixDsmSecretsManagerParameters;
 import tech.pegasys.web3signer.commandline.PicoCliSlashingProtectionParameters;
 import tech.pegasys.web3signer.commandline.config.PicoKeystoresParameters;
 import tech.pegasys.web3signer.core.Eth2Runner;
@@ -111,6 +112,7 @@ public class Eth2SubCommand extends ModeSubCommand {
 
   @Mixin private PicoCliSlashingProtectionParameters slashingProtectionParameters;
   @Mixin private PicoCliAzureKeyVaultParameters azureKeyVaultParameters;
+  @Mixin private PicoCliFortanixDsmSecretsManagerParameters fortanixDsmSecretsManagerParameters;
   @Mixin private PicoKeystoresParameters keystoreParameters;
   @Mixin private PicoCliAwsSecretsManagerParameters awsSecretsManagerParameters;
   private tech.pegasys.teku.spec.Spec eth2Spec;
@@ -129,6 +131,7 @@ public class Eth2SubCommand extends ModeSubCommand {
         azureKeyVaultParameters,
         keystoreParameters,
         awsSecretsManagerParameters,
+        fortanixDsmSecretsManagerParameters,
         eth2Spec,
         isKeyManagerApiEnabled);
   }
@@ -195,6 +198,34 @@ public class Eth2SubCommand extends ModeSubCommand {
     validateAzureParameters();
     validateKeystoreParameters(keystoreParameters);
     validateAwsSecretsManageParameters();
+    vailidateFortanixDsmSecretsParameters();
+  }
+
+  private void vailidateFortanixDsmSecretsParameters() {
+    if (fortanixDsmSecretsManagerParameters.isFortanixDsmEnabled()) {
+      final List<String> missingFortanixDsmFields = missingFortanixDsmFields();
+      if (!missingFortanixDsmFields.isEmpty()) {
+        final String errorMsg =
+            String.format(
+                "Fortanix Dsm was enabled, but the following parameters were missing [%s].",
+                String.join(",", missingFortanixDsmFields));
+        throw new ParameterException(commandSpec.commandLine(), errorMsg);
+      }
+    }
+  }
+
+  private List<String> missingFortanixDsmFields() {
+    final List<String> missingFields = Lists.newArrayList();
+    if (fortanixDsmSecretsManagerParameters.getApiKey() == null) {
+      missingFields.add("--api-key");
+    }
+    if (fortanixDsmSecretsManagerParameters.getSecretName() == null) {
+      missingFields.add("--secret-name");
+    }
+    if (fortanixDsmSecretsManagerParameters.getServer() == null) {
+      missingFields.add("--server");
+    }
+    return missingFields;
   }
 
   private void validateAzureParameters() {

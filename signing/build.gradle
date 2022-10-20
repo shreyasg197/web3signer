@@ -30,6 +30,7 @@ dependencies {
   implementation 'tech.pegasys.signers.internal:bls-keystore'
   implementation 'tech.pegasys.signers.internal:keystorage-aws'
   implementation 'tech.pegasys.signers.internal:keystorage-azure'
+  implementation files('/home/ccm-user/signers/keystorage/fortanixdsm/build/libs/keystorage-fortanixdsm-develop.jar')
   implementation 'tech.pegasys.signers.internal:keystorage-hashicorp'
   implementation 'tech.pegasys.signers.internal:keystorage-interlock'
   implementation 'tech.pegasys.signers.internal:keystorage-yubihsm2'

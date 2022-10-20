@@ -18,6 +18,7 @@ import tech.pegasys.signers.bls.keystore.KeyStore;
 import tech.pegasys.signers.bls.keystore.KeyStoreLoader;
 import tech.pegasys.signers.bls.keystore.KeyStoreValidationException;
 import tech.pegasys.signers.bls.keystore.model.KeyStoreData;
+import tech.pegasys.signers.fortanixdsm.FortanixDSM;
 import tech.pegasys.signers.hashicorp.HashicorpConnectionFactory;
 import tech.pegasys.teku.bls.BLSKeyPair;
 import tech.pegasys.teku.bls.BLSSecretKey;
@@ -52,8 +53,14 @@ public class BlsArtifactSignerFactory extends AbstractArtifactSignerFactory {
       final InterlockKeyProvider interlockKeyProvider,
       final YubiHsmOpaqueDataProvider yubiHsmOpaqueDataProvider,
       final AwsSecretsManagerProvider awsSecretsManagerProvider,
+      final FortanixDSM fortanixDsmProvider,
       final Function<BlsArtifactSignerArgs, ArtifactSigner> signerFactory) {
-    super(connectionFactory, configsDirectory, interlockKeyProvider, yubiHsmOpaqueDataProvider);
+    super(
+        connectionFactory,
+        configsDirectory,
+        interlockKeyProvider,
+        yubiHsmOpaqueDataProvider,
+        fortanixDsmProvider);
     privateKeyRetrievalTimer =
         metricsSystem.createLabelledTimer(
             Web3SignerMetricCategory.SIGNING,
@@ -115,6 +122,18 @@ public class BlsArtifactSignerFactory extends AbstractArtifactSignerFactory {
   public ArtifactSigner create(final YubiHsmSigningMetadata yubiHsmSigningMetadata) {
     try (final TimingContext ignored = privateKeyRetrievalTimer.labels("yubihsm").startTimer()) {
       final Bytes32 keyBytes = Bytes32.wrap(extractOpaqueDataFromYubiHsm(yubiHsmSigningMetadata));
+      final BLSKeyPair keyPair = new BLSKeyPair(BLSSecretKey.fromBytes(keyBytes));
+      return signerFactory.apply(new BlsArtifactSignerArgs(keyPair, SignerOrigin.YUBI_HSM));
+    }
+  }
+
+  @Override
+  public ArtifactSigner create(
+      final FortanixDsmSecretSigningMetadata fortanixDsmSecretSigningMetadata) {
+    try (final TimingContext ignored =
+        privateKeyRetrievalTimer.labels("fortanixdsm").startTimer()) {
+      final Bytes32 keyBytes =
+          Bytes32.wrap(extractBytesFromFortanixDsm(fortanixDsmSecretSigningMetadata));
       final BLSKeyPair keyPair = new BLSKeyPair(BLSSecretKey.fromBytes(keyBytes));
       return signerFactory.apply(new BlsArtifactSignerArgs(keyPair, SignerOrigin.YUBI_HSM));
     }

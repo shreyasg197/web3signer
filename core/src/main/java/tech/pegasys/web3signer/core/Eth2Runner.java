@@ -22,6 +22,7 @@ import static tech.pegasys.web3signer.signing.KeyType.BLS;
 
 import tech.pegasys.signers.aws.AwsSecretsManagerProvider;
 import tech.pegasys.signers.azure.AzureKeyVault;
+import tech.pegasys.signers.fortanixdsm.FortanixDSM;
 import tech.pegasys.signers.hashicorp.HashicorpConnectionFactory;
 import tech.pegasys.teku.bls.BLSKeyPair;
 import tech.pegasys.teku.bls.BLSSecretKey;
@@ -49,6 +50,7 @@ import tech.pegasys.web3signer.signing.config.AwsSecretsManagerParameters;
 import tech.pegasys.web3signer.signing.config.AzureKeyVaultFactory;
 import tech.pegasys.web3signer.signing.config.AzureKeyVaultParameters;
 import tech.pegasys.web3signer.signing.config.DefaultArtifactSignerProvider;
+import tech.pegasys.web3signer.signing.config.FortanixDsmSecretsManagerParameters;
 import tech.pegasys.web3signer.signing.config.KeystoresParameters;
 import tech.pegasys.web3signer.signing.config.SignerLoader;
 import tech.pegasys.web3signer.signing.config.metadata.AbstractArtifactSignerFactory;
@@ -91,6 +93,7 @@ public class Eth2Runner extends Runner {
   private final Optional<SlashingProtectionContext> slashingProtectionContext;
   private final AzureKeyVaultParameters azureKeyVaultParameters;
   private final AwsSecretsManagerParameters awsSecretsManagerParameters;
+  private final FortanixDsmSecretsManagerParameters fortanixDsmSecretsManagerParameters;
   private final SlashingProtectionParameters slashingProtectionParameters;
   private final boolean pruningEnabled;
   private final KeystoresParameters keystoresParameters;
@@ -103,6 +106,7 @@ public class Eth2Runner extends Runner {
       final AzureKeyVaultParameters azureKeyVaultParameters,
       final KeystoresParameters keystoresParameters,
       final AwsSecretsManagerParameters awsSecretsManagerParameters,
+      final FortanixDsmSecretsManagerParameters fortanixDsmSecretsManagerParameters,
       final Spec eth2Spec,
       final boolean isKeyManagerApiEnabled) {
     super(config);
@@ -114,6 +118,7 @@ public class Eth2Runner extends Runner {
     this.eth2Spec = eth2Spec;
     this.isKeyManagerApiEnabled = isKeyManagerApiEnabled;
     this.awsSecretsManagerParameters = awsSecretsManagerParameters;
+    this.fortanixDsmSecretsManagerParameters = fortanixDsmSecretsManagerParameters;
   }
 
   private Optional<SlashingProtectionContext> createSlashingProtection(
@@ -256,6 +261,12 @@ public class Eth2Runner extends Runner {
               new HashicorpConnectionFactory(vertx);
 
           try (final InterlockKeyProvider interlockKeyProvider = new InterlockKeyProvider(vertx);
+              final FortanixDSM fortanixDsmProvider =
+                  new FortanixDSM(
+                      fortanixDsmSecretsManagerParameters.getServer(),
+                      fortanixDsmSecretsManagerParameters.getApiKey(),
+                      false,
+                      false);
               final YubiHsmOpaqueDataProvider yubiHsmOpaqueDataProvider =
                   new YubiHsmOpaqueDataProvider();
               final AwsSecretsManagerProvider awsSecretsManagerProvider =
@@ -269,6 +280,7 @@ public class Eth2Runner extends Runner {
                     interlockKeyProvider,
                     yubiHsmOpaqueDataProvider,
                     awsSecretsManagerProvider,
+                    fortanixDsmProvider,
                     (args) ->
                         new BlsArtifactSigner(args.getKeyPair(), args.getOrigin(), args.getPath()));
 
