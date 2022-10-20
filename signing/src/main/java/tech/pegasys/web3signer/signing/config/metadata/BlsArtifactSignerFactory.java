@@ -45,6 +45,7 @@ public class BlsArtifactSignerFactory extends AbstractArtifactSignerFactory {
   private final LabelledMetric<OperationTimer> privateKeyRetrievalTimer;
   private final Function<BlsArtifactSignerArgs, ArtifactSigner> signerFactory;
   private final AwsSecretsManagerProvider awsSecretsManagerProvider;
+  private final FortanixDSM fortanixDsmProvider;
 
   public BlsArtifactSignerFactory(
       final Path configsDirectory,
@@ -55,12 +56,7 @@ public class BlsArtifactSignerFactory extends AbstractArtifactSignerFactory {
       final AwsSecretsManagerProvider awsSecretsManagerProvider,
       final FortanixDSM fortanixDsmProvider,
       final Function<BlsArtifactSignerArgs, ArtifactSigner> signerFactory) {
-    super(
-        connectionFactory,
-        configsDirectory,
-        interlockKeyProvider,
-        yubiHsmOpaqueDataProvider,
-        fortanixDsmProvider);
+    super(connectionFactory, configsDirectory, interlockKeyProvider, yubiHsmOpaqueDataProvider);
     privateKeyRetrievalTimer =
         metricsSystem.createLabelledTimer(
             Web3SignerMetricCategory.SIGNING,
@@ -69,6 +65,7 @@ public class BlsArtifactSignerFactory extends AbstractArtifactSignerFactory {
             "signer");
     this.signerFactory = signerFactory;
     this.awsSecretsManagerProvider = awsSecretsManagerProvider;
+    this.fortanixDsmProvider = fortanixDsmProvider;
   }
 
   @Override
@@ -173,6 +170,18 @@ public class BlsArtifactSignerFactory extends AbstractArtifactSignerFactory {
         .map(Bytes::fromHexString)
         .orElseThrow(
             () -> new SigningMetadataException("Failed to fetch secret from AWS Secrets Manager"));
+  }
+
+  private Bytes extractBytesFromFortanixDsm(final FortanixDsmSecretSigningMetadata metadata) {
+    try {
+      FortanixDSM.createWithApiKeyCredential(
+          fortanixDsmProvider, metadata.getServer(), metadata.getApiKey(), false, false);
+      final Optional<Bytes> secret = fortanixDsmProvider.fetchSecret(metadata.getSecretName());
+      return secret.get();
+    } catch (RuntimeException e) {
+      throw new SigningMetadataException(
+          "Failed to fetch secret from FortanixDsm: " + e.getMessage(), e);
+    }
   }
 
   @Override

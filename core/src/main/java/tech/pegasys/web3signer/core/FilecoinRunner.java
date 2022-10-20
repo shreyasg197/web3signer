@@ -20,6 +20,7 @@ import static tech.pegasys.web3signer.core.service.http.OpenApiOperationsId.RELO
 import static tech.pegasys.web3signer.core.service.http.handlers.ContentTypes.JSON_UTF_8;
 
 import tech.pegasys.signers.aws.AwsSecretsManagerProvider;
+import tech.pegasys.signers.fortanixdsm.FortanixDSM;
 import tech.pegasys.signers.hashicorp.HashicorpConnectionFactory;
 import tech.pegasys.signers.secp256k1.azure.AzureKeyVaultSignerFactory;
 import tech.pegasys.web3signer.core.config.Config;
@@ -120,6 +121,7 @@ public class FilecoinRunner extends Runner {
               new HashicorpConnectionFactory(vertx);
 
           try (final InterlockKeyProvider interlockKeyProvider = new InterlockKeyProvider(vertx);
+              final FortanixDSM fortanixDsmProvider = new FortanixDSM();
               final YubiHsmOpaqueDataProvider yubiHsmOpaqueDataProvider =
                   new YubiHsmOpaqueDataProvider();
               final AwsSecretsManagerProvider awsSecretsManagerProvider =
@@ -133,6 +135,7 @@ public class FilecoinRunner extends Runner {
                     interlockKeyProvider,
                     yubiHsmOpaqueDataProvider,
                     awsSecretsManagerProvider,
+                    fortanixDsmProvider,
                     (args) -> new FcBlsArtifactSigner(args.getKeyPair(), network));
 
             final AbstractArtifactSignerFactory secpArtifactSignerFactory =

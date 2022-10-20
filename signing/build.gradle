@@ -31,6 +31,7 @@ dependencies {
   implementation 'tech.pegasys.signers.internal:keystorage-aws'
   implementation 'tech.pegasys.signers.internal:keystorage-azure'
   implementation files('/home/ccm-user/signers/keystorage/fortanixdsm/build/libs/keystorage-fortanixdsm-develop.jar')
+  implementation 'com.fortanix:sdkms-client:4.11.2116'
   implementation 'tech.pegasys.signers.internal:keystorage-hashicorp'
   implementation 'tech.pegasys.signers.internal:keystorage-interlock'
   implementation 'tech.pegasys.signers.internal:keystorage-yubihsm2'
@@ -50,6 +51,7 @@ dependencies {
   testImplementation 'org.junit.jupiter:junit-jupiter-params'
   testImplementation 'org.mockito:mockito-junit-jupiter'
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+  testImplementation files('/home/ccm-user/signers/keystorage/fortanixdsm/build/libs/keystorage-fortanixdsm-develop.jar')
 
   testFixturesApi 'tech.pegasys.teku.internal:bls'
   testFixturesImplementation 'com.fasterxml.jackson.core:jackson-databind'

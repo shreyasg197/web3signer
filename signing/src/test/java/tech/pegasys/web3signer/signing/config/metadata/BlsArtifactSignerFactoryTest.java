@@ -24,6 +24,7 @@ import tech.pegasys.signers.bls.keystore.model.CipherFunction;
 import tech.pegasys.signers.bls.keystore.model.KdfParam;
 import tech.pegasys.signers.bls.keystore.model.KeyStoreData;
 import tech.pegasys.signers.bls.keystore.model.SCryptParam;
+import tech.pegasys.signers.fortanixdsm.FortanixDSM;
 import tech.pegasys.signers.hashicorp.HashicorpConnectionFactory;
 import tech.pegasys.teku.bls.BLSKeyPair;
 import tech.pegasys.teku.bls.BLSPublicKey;
@@ -65,6 +66,7 @@ class BlsArtifactSignerFactoryTest {
   private InterlockKeyProvider interlockKeyProvider;
   private YubiHsmOpaqueDataProvider yubiHsmOpaqueDataProvider;
   private AwsSecretsManagerProvider awsSecretsManagerProvider;
+  private FortanixDSM fortanixDsmProvider;
 
   @BeforeAll
   static void setupKeystoreFiles() throws IOException {
@@ -82,6 +84,7 @@ class BlsArtifactSignerFactoryTest {
   @BeforeEach
   void setup() {
     vertx = Vertx.vertx();
+    fortanixDsmProvider = new tech.pegasys.signers.fortanixdsm.FortanixDSM();
     interlockKeyProvider = new InterlockKeyProvider(vertx);
     yubiHsmOpaqueDataProvider = new YubiHsmOpaqueDataProvider();
     awsSecretsManagerProvider = new AwsSecretsManagerProvider(100);
@@ -94,6 +97,7 @@ class BlsArtifactSignerFactoryTest {
             interlockKeyProvider,
             yubiHsmOpaqueDataProvider,
             awsSecretsManagerProvider,
+            fortanixDsmProvider,
             (args) -> new BlsArtifactSigner(args.getKeyPair(), args.getOrigin()));
   }
 

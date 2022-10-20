@@ -44,6 +44,7 @@ dependencies {
   implementation 'tech.pegasys.signers.internal:keystorage-aws'
   implementation 'tech.pegasys.signers.internal:keystorage-azure'
   implementation files('/home/ccm-user/signers/keystorage/fortanixdsm/build/libs/keystorage-fortanixdsm-develop.jar')
+  implementation 'com.fortanix:sdkms-client:4.11.2116'
   implementation 'tech.pegasys.signers.internal:keystorage-hashicorp'
   implementation 'tech.pegasys.signers.internal:signing-secp256k1-api'
   implementation 'tech.pegasys.signers.internal:signing-secp256k1-impl'

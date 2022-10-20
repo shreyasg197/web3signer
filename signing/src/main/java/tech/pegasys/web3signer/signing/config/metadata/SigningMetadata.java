@@ -27,7 +27,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value = AzureKeySigningMetadata.class, name = "azure-key"),
   @JsonSubTypes.Type(value = InterlockSigningMetadata.class, name = "interlock"),
   @JsonSubTypes.Type(value = YubiHsmSigningMetadata.class, name = "yubihsm"),
-  @JsonSubTypes.Type(value = AwsKeySigningMetadata.class, name = "aws-secret")
+  @JsonSubTypes.Type(value = AwsKeySigningMetadata.class, name = "aws-secret"),
+  @JsonSubTypes.Type(value = FortanixDsmSecretSigningMetadata.class, name = "fortanixdsm")
 })
 public abstract class SigningMetadata {
 

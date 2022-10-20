@@ -88,12 +88,12 @@ import org.apache.tuweni.bytes.Bytes32;
 import org.hyperledger.besu.plugin.services.MetricsSystem;
 
 public class Eth2Runner extends Runner {
+  // private final FortanixDsmSecretsManagerParameters fortanixDsmSecretsManagerParameters;
   private static final Logger LOG = LogManager.getLogger();
 
   private final Optional<SlashingProtectionContext> slashingProtectionContext;
   private final AzureKeyVaultParameters azureKeyVaultParameters;
   private final AwsSecretsManagerParameters awsSecretsManagerParameters;
-  private final FortanixDsmSecretsManagerParameters fortanixDsmSecretsManagerParameters;
   private final SlashingProtectionParameters slashingProtectionParameters;
   private final boolean pruningEnabled;
   private final KeystoresParameters keystoresParameters;
@@ -118,7 +118,7 @@ public class Eth2Runner extends Runner {
     this.eth2Spec = eth2Spec;
     this.isKeyManagerApiEnabled = isKeyManagerApiEnabled;
     this.awsSecretsManagerParameters = awsSecretsManagerParameters;
-    this.fortanixDsmSecretsManagerParameters = fortanixDsmSecretsManagerParameters;
+    // this.fortanixDsmSecretsManagerParameters = fortanixDsmSecretsManagerParameters;
   }
 
   private Optional<SlashingProtectionContext> createSlashingProtection(
@@ -261,12 +261,7 @@ public class Eth2Runner extends Runner {
               new HashicorpConnectionFactory(vertx);
 
           try (final InterlockKeyProvider interlockKeyProvider = new InterlockKeyProvider(vertx);
-              final FortanixDSM fortanixDsmProvider =
-                  new FortanixDSM(
-                      fortanixDsmSecretsManagerParameters.getServer(),
-                      fortanixDsmSecretsManagerParameters.getApiKey(),
-                      false,
-                      false);
+              final FortanixDSM fortanixDsmProvider = new FortanixDSM();
               final YubiHsmOpaqueDataProvider yubiHsmOpaqueDataProvider =
                   new YubiHsmOpaqueDataProvider();
               final AwsSecretsManagerProvider awsSecretsManagerProvider =

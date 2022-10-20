@@ -16,7 +16,6 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import tech.pegasys.signers.azure.AzureKeyVault;
-import tech.pegasys.signers.fortanixdsm.FortanixDSM;
 import tech.pegasys.signers.hashicorp.HashicorpConnection;
 import tech.pegasys.signers.hashicorp.HashicorpConnectionFactory;
 import tech.pegasys.signers.hashicorp.TrustStoreType;
@@ -42,30 +41,27 @@ public abstract class AbstractArtifactSignerFactory implements ArtifactSignerFac
   final Path configsDirectory;
   private final InterlockKeyProvider interlockKeyProvider;
   private final YubiHsmOpaqueDataProvider yubiHsmOpaqueDataProvider;
-  private final FortanixDSM fortanixDsmProvider;
 
   protected AbstractArtifactSignerFactory(
       final HashicorpConnectionFactory hashicorpConnectionFactory,
       final Path configsDirectory,
       final InterlockKeyProvider interlockKeyProvider,
-      final YubiHsmOpaqueDataProvider yubiHsmOpaqueDataProvider,
-      final FortanixDSM fortanixDsmProvider) {
+      final YubiHsmOpaqueDataProvider yubiHsmOpaqueDataProvider) {
     this.hashicorpConnectionFactory = hashicorpConnectionFactory;
     this.configsDirectory = configsDirectory;
     this.interlockKeyProvider = interlockKeyProvider;
     this.yubiHsmOpaqueDataProvider = yubiHsmOpaqueDataProvider;
-    this.fortanixDsmProvider = fortanixDsmProvider;
   }
 
-  protected Bytes extractBytesFromFortanixDsm(final FortanixDsmSecretSigningMetadata metadata) {
-    try {
-      final Optional<Bytes> secret = fortanixDsmProvider.fetchSecret(metadata.getSecretName());
-      return secret.get();
-    } catch (RuntimeException e) {
-      throw new SigningMetadataException(
-          "Failed to fetch secret from FortanixDsm: " + e.getMessage(), e);
-    }
-  }
+  // protected Bytes extractBytesFromFortanixDsm(final FortanixDsmSecretSigningMetadata metadata) {
+  //   try {
+  //     final Optional<Bytes> secret = fortanixDsmProvider.fetchSecret(metadata.getSecretName());
+  //     return secret.get();
+  //   } catch (RuntimeException e) {
+  //     throw new SigningMetadataException(
+  //         "Failed to fetch secret from FortanixDsm: " + e.getMessage(), e);
+  //   }
+  // }
 
   protected Bytes extractBytesFromVault(final AzureSecretSigningMetadata metadata) {
     final AzureKeyVault azureVault = AzureKeyVaultFactory.createAzureKeyVault(metadata);
