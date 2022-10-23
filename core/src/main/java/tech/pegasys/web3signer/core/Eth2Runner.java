@@ -70,6 +70,8 @@ import tech.pegasys.web3signer.slashingprotection.dao.ValidatorsDao;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -94,6 +96,7 @@ public class Eth2Runner extends Runner {
   private final Optional<SlashingProtectionContext> slashingProtectionContext;
   private final AzureKeyVaultParameters azureKeyVaultParameters;
   private final AwsSecretsManagerParameters awsSecretsManagerParameters;
+  private final FortanixDsmSecretsManagerParameters fortanixDsmSecretsManagerParameters;
   private final SlashingProtectionParameters slashingProtectionParameters;
   private final boolean pruningEnabled;
   private final KeystoresParameters keystoresParameters;
@@ -118,7 +121,7 @@ public class Eth2Runner extends Runner {
     this.eth2Spec = eth2Spec;
     this.isKeyManagerApiEnabled = isKeyManagerApiEnabled;
     this.awsSecretsManagerParameters = awsSecretsManagerParameters;
-    // this.fortanixDsmSecretsManagerParameters = fortanixDsmSecretsManagerParameters;
+    this.fortanixDsmSecretsManagerParameters = fortanixDsmSecretsManagerParameters;
   }
 
   private Optional<SlashingProtectionContext> createSlashingProtection(
@@ -304,6 +307,10 @@ public class Eth2Runner extends Runner {
             signers.addAll(keystoreSigners);
           }
 
+          if (fortanixDsmSecretsManagerParameters.isFortanixDsmEnabled()) {
+            LOG.info("Bulk loading Fortanix Keys"); 
+            signers.addAll(loadFortanixDsmSigners());
+          }
           if (awsSecretsManagerParameters.isEnabled()) {
             LOG.info("Bulk loading keys from AWS Secrets Manager ... ");
             final AWSBulkLoadingArtifactSignerProvider awsBulkLoadingArtifactSignerProvider =
@@ -383,6 +390,28 @@ public class Eth2Runner extends Runner {
             return null;
           }
         });
+  }
+
+  final Collection<ArtifactSigner> loadFortanixDsmSigners() {
+    final FortanixDSM fortanixDsm = new FortanixDSM();
+    FortanixDSM.createWithApiKeyCredential(
+        fortanixDsm,
+        fortanixDsmSecretsManagerParameters.getServer(),
+        fortanixDsmSecretsManagerParameters.getApiKey(),
+        false,
+        false);
+    try {
+      final Set<ArtifactSigner> result = ConcurrentHashMap.newKeySet();
+      final Bytes privateKeyBytes =
+          fortanixDsm.fetchSecret(fortanixDsmSecretsManagerParameters.getSecretName()).get();
+      final BLSKeyPair KeyPair =
+          new BLSKeyPair(BLSSecretKey.fromBytes(Bytes32.wrap(privateKeyBytes)));
+      result.add(new BlsArtifactSigner(KeyPair, SignerOrigin.FORTANIXDSM));
+      return result;
+    } catch (final Exception e) {
+      LOG.error("Failed to load secrets from FortanixDSM", e);
+      return null;
+    }
   }
 
   private String formatBlsSignature(final BlsArtifactSignature signature) {

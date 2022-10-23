@@ -13,6 +13,7 @@
 package tech.pegasys.web3signer.signing.config.metadata;
 
 public enum SignerOrigin {
+  FORTANIXDSM,
   AZURE,
   HASHICORP,
   AWS,
