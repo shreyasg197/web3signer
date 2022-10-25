@@ -132,7 +132,7 @@ public class BlsArtifactSignerFactory extends AbstractArtifactSignerFactory {
       final Bytes32 keyBytes =
           Bytes32.wrap(extractBytesFromFortanixDsm(fortanixDsmSecretSigningMetadata));
       final BLSKeyPair keyPair = new BLSKeyPair(BLSSecretKey.fromBytes(keyBytes));
-      return signerFactory.apply(new BlsArtifactSignerArgs(keyPair, SignerOrigin.YUBI_HSM));
+      return signerFactory.apply(new BlsArtifactSignerArgs(keyPair, SignerOrigin.FORTANIXDSM));
     }
   }
 
