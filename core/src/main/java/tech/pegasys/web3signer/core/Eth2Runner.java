@@ -264,7 +264,6 @@ public class Eth2Runner extends Runner {
               new HashicorpConnectionFactory(vertx);
 
           try (final InterlockKeyProvider interlockKeyProvider = new InterlockKeyProvider(vertx);
-              final FortanixDSM fortanixDsmProvider = new FortanixDSM();
               final YubiHsmOpaqueDataProvider yubiHsmOpaqueDataProvider =
                   new YubiHsmOpaqueDataProvider();
               final AwsSecretsManagerProvider awsSecretsManagerProvider =
@@ -278,7 +277,6 @@ public class Eth2Runner extends Runner {
                     interlockKeyProvider,
                     yubiHsmOpaqueDataProvider,
                     awsSecretsManagerProvider,
-                    fortanixDsmProvider,
                     (args) ->
                         new BlsArtifactSigner(args.getKeyPair(), args.getOrigin(), args.getPath()));
 
@@ -308,7 +306,7 @@ public class Eth2Runner extends Runner {
           }
 
           if (fortanixDsmSecretsManagerParameters.isFortanixDsmEnabled()) {
-            LOG.info("Bulk loading Fortanix Keys"); 
+            LOG.info("Loading Fortanix Keys");
             signers.addAll(loadFortanixDsmSigners());
           }
           if (awsSecretsManagerParameters.isEnabled()) {
@@ -393,13 +391,12 @@ public class Eth2Runner extends Runner {
   }
 
   final Collection<ArtifactSigner> loadFortanixDsmSigners() {
-    final FortanixDSM fortanixDsm = new FortanixDSM();
-    FortanixDSM.createWithApiKeyCredential(
-        fortanixDsm,
-        fortanixDsmSecretsManagerParameters.getServer(),
-        fortanixDsmSecretsManagerParameters.getApiKey(),
-        false,
-        false);
+    final FortanixDSM fortanixDsm =
+        FortanixDSM.createWithApiKeyCredential(
+            fortanixDsmSecretsManagerParameters.getServer(),
+            fortanixDsmSecretsManagerParameters.getApiKey(),
+            false,
+            false);
     try {
       final Set<ArtifactSigner> result = ConcurrentHashMap.newKeySet();
       final Bytes privateKeyBytes =
