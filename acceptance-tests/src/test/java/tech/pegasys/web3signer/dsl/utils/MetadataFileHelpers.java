@@ -160,6 +160,25 @@ public class MetadataFileHelpers {
     }
   }
 
+  public void createFortanixYamlFileAt(
+      final Path metadataFilePath,
+      final String server,
+      final String apiKey,
+      final String secretName,
+      final KeyType keyType) {
+    try {
+      final Map<String, String> signingMetadata = new HashMap<>();
+      signingMetadata.put("type", "fortanixdsm");
+      signingMetadata.put("server", server);
+      signingMetadata.put("secret-name", secretName);
+      signingMetadata.put("api-key", apiKey);
+      signingMetadata.put("keyType", keyType.name());
+      createYamlFile(metadataFilePath, signingMetadata);
+    } catch (final Exception e) {
+      throw new RuntimeException("Unable to construct FortanixDSM yaml file", e);
+    }
+  }
+
   public void createAzureKeyYamlFileAt(
       final Path metadataFilePath,
       final String clientId,

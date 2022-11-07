@@ -70,8 +70,6 @@ import tech.pegasys.web3signer.slashingprotection.dao.ValidatorsDao;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -394,21 +392,19 @@ public class Eth2Runner extends Runner {
     final FortanixDSM fortanixDsm =
         FortanixDSM.createWithApiKeyCredential(
             fortanixDsmSecretsManagerParameters.getServer(),
-            fortanixDsmSecretsManagerParameters.getApiKey(),
-            false,
-            false);
-    try {
-      final Set<ArtifactSigner> result = ConcurrentHashMap.newKeySet();
-      final Bytes privateKeyBytes =
-          fortanixDsm.fetchSecret(fortanixDsmSecretsManagerParameters.getSecretName()).get();
-      final BLSKeyPair KeyPair =
-          new BLSKeyPair(BLSSecretKey.fromBytes(Bytes32.wrap(privateKeyBytes)));
-      result.add(new BlsArtifactSigner(KeyPair, SignerOrigin.FORTANIXDSM));
-      return result;
-    } catch (final Exception e) {
-      LOG.error("Failed to load secrets from FortanixDSM", e);
-      return null;
-    }
+            fortanixDsmSecretsManagerParameters.getApiKey());
+    return fortanixDsm.mapSecret(
+        fortanixDsmSecretsManagerParameters.getSecretName(),
+        (name, value) -> {
+          try {
+            final BLSKeyPair keyPair = new BLSKeyPair(BLSSecretKey.fromBytes(Bytes32.wrap(value)));
+            LOG.info("Loading {} secret from Fortanix DSM", name);
+            return new BlsArtifactSigner(keyPair, SignerOrigin.FORTANIXDSM);
+          } catch (final Exception e) {
+            LOG.error("Failed to load secret named {} from Fortanix DSM.", name);
+            return null;
+          }
+        });
   }
 
   private String formatBlsSignature(final BlsArtifactSignature signature) {

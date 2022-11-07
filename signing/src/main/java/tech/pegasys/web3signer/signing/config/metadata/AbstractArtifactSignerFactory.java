@@ -53,16 +53,6 @@ public abstract class AbstractArtifactSignerFactory implements ArtifactSignerFac
     this.yubiHsmOpaqueDataProvider = yubiHsmOpaqueDataProvider;
   }
 
-  // protected Bytes extractBytesFromFortanixDsm(final FortanixDsmSecretSigningMetadata metadata) {
-  //   try {
-  //     final Optional<Bytes> secret = fortanixDsmProvider.fetchSecret(metadata.getSecretName());
-  //     return secret.get();
-  //   } catch (RuntimeException e) {
-  //     throw new SigningMetadataException(
-  //         "Failed to fetch secret from FortanixDsm: " + e.getMessage(), e);
-  //   }
-  // }
-
   protected Bytes extractBytesFromVault(final AzureSecretSigningMetadata metadata) {
     final AzureKeyVault azureVault = AzureKeyVaultFactory.createAzureKeyVault(metadata);
 

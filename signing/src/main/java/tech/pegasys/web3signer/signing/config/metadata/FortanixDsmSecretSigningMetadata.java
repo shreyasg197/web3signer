@@ -16,14 +16,21 @@ import tech.pegasys.web3signer.signing.ArtifactSigner;
 import tech.pegasys.web3signer.signing.KeyType;
 import tech.pegasys.web3signer.signing.config.FortanixDsmSecretsManagerParameters;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class FortanixDsmSecretSigningMetadata extends SigningMetadata
     implements FortanixDsmSecretsManagerParameters {
   private final String ApiKey;
   private final String Server;
   private final String SecretName;
 
+  @JsonCreator
   public FortanixDsmSecretSigningMetadata(
-      final String ApiKey, final String Server, final String SecretName, final KeyType keyType) {
+      @JsonProperty(value = "api-key", required = true) final String ApiKey,
+      @JsonProperty(value = "server", required = true) final String Server,
+      @JsonProperty(value = "secret-name", required = true) final String SecretName,
+      @JsonProperty(value = "keyType") final KeyType keyType) {
     super(keyType != null ? keyType : KeyType.BLS);
     this.ApiKey = ApiKey;
     this.Server = Server;

@@ -172,8 +172,7 @@ public class BlsArtifactSignerFactory extends AbstractArtifactSignerFactory {
   private Bytes extractBytesFromFortanixDsm(final FortanixDsmSecretSigningMetadata metadata) {
     try {
       FortanixDSM fortanixDsm =
-          FortanixDSM.createWithApiKeyCredential(
-              metadata.getServer(), metadata.getApiKey(), false, false);
+          FortanixDSM.createWithApiKeyCredential(metadata.getServer(), metadata.getApiKey());
       final Optional<Bytes> secret = fortanixDsm.fetchSecret(metadata.getSecretName());
       return secret.get();
     } catch (RuntimeException e) {
